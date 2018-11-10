@@ -1,7 +1,10 @@
 package kafka;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.*;
 
@@ -9,7 +12,9 @@ import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
+
 import config.conf;
+import datalake.adlsGUI;
 import kafka.utils.ZkUtils;
 import scala.collection.JavaConversions;
 
@@ -30,7 +35,7 @@ public class kafkaGUI extends JPanel {
 	private JLabel lblType;
 	private JComboBox<String> comboSelectType;
 	private JButton btnrun;
-	private JButton btnopen;
+	private JButton btnrefresh;
 	private JLabel lblSchema;
 	private JComboBox<String> comboSchema;
 	private JLabel lblSchemaFile;
@@ -39,7 +44,8 @@ public class kafkaGUI extends JPanel {
 	private JLabel lblDataFile;
 	private JTextField txtDataSelect;
 	private JButton btnDataSelect;
-
+	private Properties p;
+	private connection con;
 	public kafkaGUI(conf cn) {
 		// construct preComponents
 		JFrame frame = new JFrame("Kafka");
@@ -59,7 +65,7 @@ public class kafkaGUI extends JPanel {
 		lblType = new JLabel("Type :");
 		comboSelectType = new JComboBox<String>(comboSelectTypeItems);
 		btnrun = new JButton("Run");
-		btnopen = new JButton("Config");
+		btnrefresh = new JButton("Refresh");
 		lblSchema = new JLabel("Schema :");
 		comboSchema = new JComboBox<String>(comboSchemaItems);
 		lblSchemaFile = new JLabel("Schema File :");
@@ -85,7 +91,7 @@ public class kafkaGUI extends JPanel {
 		add(lblType);
 		add(comboSelectType);
 		add(btnrun);
-		add(btnopen);
+		add(btnrefresh);
 		add(lblSchema);
 		add(comboSchema);
 		add(lblSchemaFile);
@@ -108,7 +114,7 @@ public class kafkaGUI extends JPanel {
 		lblType.setBounds(20, 125, 100, 25);
 		comboSelectType.setBounds(110, 125, 170, 25);
 		btnrun.setBounds(300, 125, 100, 25);
-		btnopen.setBounds(300, 25, 100, 25);
+		btnrefresh.setBounds(300, 25, 100, 25);
 		lblSchema.setBounds(430, 25, 100, 25);
 		comboSchema.setBounds(515, 25, 135, 25);
 		lblSchemaFile.setBounds(430, 60, 100, 25);
@@ -119,32 +125,25 @@ public class kafkaGUI extends JPanel {
 		btnDataSelect.setBounds(840, 85, 95, 25);
 		txtServer.setText(cn.getKafkaConfig().getProperty("Server"));
 		txtPort.setText(cn.getKafkaConfig().getProperty("Port"));
-
-		getTopicList(comboTopic, cn.getKafkaConfig().getProperty("ZookeeperServer"),
-				cn.getKafkaConfig().getProperty("ZookeeperPort"));
-
+		p = cn.getKafkaConfig();
+		con = new connection(p);
+		getTopicList(comboTopic);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setContentPane(this);
 		frame.pack();
 		frame.setVisible(true);
+		btnrefresh.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				con = new connection(p);
+				comboTopic.removeAllItems();
+				getTopicList(comboTopic);
+			}
+		});
 	}
 
-	public void getTopicList(JComboBox<String> comboTopic, String server, String port) {
-		ZooKeeper zk = null;
-		try {
-			zk = new ZooKeeper(server + ":" + port, 10000, null);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		java.util.List<String> topics = null;
-		try {
-			topics = zk.getChildren("/brokers/topics", false);
-		} catch (KeeperException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+	public void getTopicList(JComboBox<String> comboTopic) {
+		java.util.List<String> topics = con.zookeeperConnect();
 		for (String topic : topics) {
 			System.out.println(topic);
 			comboTopic.addItem(topic);

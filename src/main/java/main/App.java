@@ -16,9 +16,7 @@ import akstream.akstreamGUI;
 import config.conf;
 
 public class App extends JPanel {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 	private JButton btnadls;
 	private JButton btnkafka;
