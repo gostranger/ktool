@@ -3,20 +3,12 @@ package kafka;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.*;
 
-import org.I0Itec.zkclient.ZkClient;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
-
-
 import config.conf;
-import datalake.adlsGUI;
-import kafka.utils.ZkUtils;
-import scala.collection.JavaConversions;
+import config.constants;
 
 public class kafkaGUI extends JPanel {
 	/**
@@ -44,14 +36,23 @@ public class kafkaGUI extends JPanel {
 	private JLabel lblDataFile;
 	private JTextField txtDataSelect;
 	private JButton btnDataSelect;
+	private JLabel lblTopicCreate;
+	private JTextField txtTopicCreate;
+	private JButton btnCreateTopic;
+	private JScrollPane txtAreaScroll;
+	private JLabel lblSuccessMessage;
 	private Properties p;
 	private connection con;
-	public kafkaGUI(conf cn) {
+	private ProducerClass pc;
+	private ConsumerClass cc;
+	
+	public kafkaGUI(final conf cn) {
 		// construct preComponents
-		JFrame frame = new JFrame("Kafka");
+		JFrame frame = new JFrame("Kafka - Producer");
 		String[] comboSelectTypeItems = { "Producer", "Consumer" };
 		String[] comboSchemaItems = { "Json", "Avro", "Xml" };
-
+		//frame.setBackground(new Color(100,100,100));
+		this.setBackground(new Color(200,200,200));
 		// construct components
 		txtServer = new JTextField(5);
 		lblServer = new JLabel("Server :");
@@ -64,7 +65,7 @@ public class kafkaGUI extends JPanel {
 		txtKey = new JTextField(5);
 		lblType = new JLabel("Type :");
 		comboSelectType = new JComboBox<String>(comboSelectTypeItems);
-		btnrun = new JButton("Run");
+		btnrun = new JButton("Send");
 		btnrefresh = new JButton("Refresh");
 		lblSchema = new JLabel("Schema :");
 		comboSchema = new JComboBox<String>(comboSchemaItems);
@@ -74,6 +75,13 @@ public class kafkaGUI extends JPanel {
 		lblDataFile = new JLabel("Data File :");
 		txtDataSelect = new JTextField(5);
 		btnDataSelect = new JButton("Select");
+		lblTopicCreate = new JLabel("Enter New Topic :");
+		txtTopicCreate = new JTextField(5);
+		btnCreateTopic = new JButton("Create Topic");
+		txtAreaScroll = new JScrollPane(txtConsole);
+		txtAreaScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		txtAreaScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		lblSuccessMessage = new JLabel("Message Sent: ");
 
 		// adjust size and set layout
 		setPreferredSize(new Dimension(944, 547));
@@ -85,7 +93,7 @@ public class kafkaGUI extends JPanel {
 		add(txtPort);
 		add(comboTopic);
 		add(lblTopic);
-		add(txtConsole);
+		//add(txtConsole);
 		add(lblKey);
 		add(txtKey);
 		add(lblType);
@@ -100,7 +108,19 @@ public class kafkaGUI extends JPanel {
 		add(lblDataFile);
 		add(txtDataSelect);
 		add(btnDataSelect);
-
+		add(lblTopicCreate);
+		add(txtTopicCreate);
+		add(btnCreateTopic);
+		add(txtAreaScroll);
+		add(lblSuccessMessage);
+		
+		lblSchemaFile.setVisible(false);
+		txtSchemaSelect.setVisible(false);
+		btnSchemaSelect.setVisible(false);
+		lblDataFile.setVisible(false);
+		txtDataSelect.setVisible(false);
+		btnDataSelect.setVisible(false);
+		
 		// set component bounds (only needed by Absolute Positioning)
 		txtServer.setBounds(110, 25, 170, 25);
 		lblServer.setBounds(20, 25, 100, 25);
@@ -109,6 +129,7 @@ public class kafkaGUI extends JPanel {
 		comboTopic.setBounds(110, 75, 170, 25);
 		lblTopic.setBounds(20, 75, 100, 25);
 		txtConsole.setBounds(20, 165, 910, 370);
+		txtAreaScroll.setBounds(20,165,910,350);
 		lblKey.setBounds(20, 100, 100, 25);
 		txtKey.setBounds(110, 100, 170, 25);
 		lblType.setBounds(20, 125, 100, 25);
@@ -123,15 +144,25 @@ public class kafkaGUI extends JPanel {
 		lblDataFile.setBounds(430, 85, 100, 25);
 		txtDataSelect.setBounds(515, 85, 320, 25);
 		btnDataSelect.setBounds(840, 85, 95, 25);
+		lblTopicCreate.setBounds(430,125,320,25);
+		txtTopicCreate.setBounds(550,125,250,25);
+		btnCreateTopic.setBounds(800,125,120,25);
+		lblSuccessMessage.setBounds(20,520,200,25);
+		txtConsole.setBackground(new Color(255, 255, 255));
 		txtServer.setText(cn.getKafkaConfig().getProperty("Server"));
 		txtPort.setText(cn.getKafkaConfig().getProperty("Port"));
+		
 		p = cn.getKafkaConfig();
 		con = new connection(p);
+		pc = new ProducerClass(comboSchema.getSelectedItem().toString());
 		getTopicList(comboTopic);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setContentPane(this);
 		frame.pack();
 		frame.setVisible(true);
+		if(con.connectionTest() == false) {
+			JOptionPane.showMessageDialog(kafkaGUI.this, "Either Zookeeper/Kafka is Offline");
+		}
 		btnrefresh.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -140,14 +171,96 @@ public class kafkaGUI extends JPanel {
 				getTopicList(comboTopic);
 			}
 		});
+		comboSelectType.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				if(comboSelectType.getSelectedItem().toString() == constants.Type.Producer.toString()){
+					lblSchema.setVisible(true);
+					comboSchema.setVisible(true);
+					btnrun.setText("Send");
+				}else {
+					lblSchema.setVisible(false);
+					comboSchema.setVisible(false);
+					lblSchemaFile.setVisible(false);
+					txtSchemaSelect.setVisible(false);
+					btnSchemaSelect.setVisible(false);
+					lblDataFile.setVisible(false);
+					txtDataSelect.setVisible(false);
+					btnDataSelect.setVisible(false);
+					btnrun.setText("Start");
+				}
+				
+			}
+		});
+		comboSchema.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				if(comboSchema.getSelectedItem().toString() == constants.schema.Avro.toString()){
+					lblSchemaFile.setVisible(true);
+					txtSchemaSelect.setVisible(true);
+					btnSchemaSelect.setVisible(true);
+					lblDataFile.setVisible(true);
+					txtDataSelect.setVisible(true);
+					btnDataSelect.setVisible(true);
+					txtConsole.setVisible(false);
+				}else {
+					lblSchemaFile.setVisible(false);
+					txtSchemaSelect.setVisible(false);
+					btnSchemaSelect.setVisible(false);
+					lblDataFile.setVisible(false);
+					txtDataSelect.setVisible(false);
+					btnDataSelect.setVisible(false);
+					txtConsole.setVisible(true);
+				}
+				
+			}
+		});
+		btnCreateTopic.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane.showMessageDialog(kafkaGUI.this, con.createTopic(txtTopicCreate.getText()));
+				con = new connection(p);
+				comboTopic.removeAllItems();
+				getTopicList(comboTopic);
+			}
+		});
+		btnrun.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(btnrun.getText() == "Start") {
+					btnrun.setText("Stop");
+					cc = new ConsumerClass(comboTopic.getSelectedItem().toString(), con,txtConsole);
+					cc.run();
+				}else if(btnrun.getText() == "Stop") {
+					btnrun.setText("Start");
+					cc.stopper();
+				}else {
+					SendData();
+				}
+			}
+		});
 	}
-
+	public void SendData() {
+		try {
+			Integer.parseInt(txtKey.getText());
+		}catch(Exception e){
+			txtKey.setText("0");
+		}
+		if(pc.send(comboTopic.getSelectedItem().toString(),comboSchema.getSelectedItem().toString(),Integer.parseInt(txtKey.getText()),txtConsole,con)) {
+			lblSuccessMessage.setText("Message Sent: Success");
+		}else {
+			lblSuccessMessage.setText("Message Sent: Failed");
+		}
+	}
 	public void getTopicList(JComboBox<String> comboTopic) {
-		java.util.List<String> topics = con.zookeeperConnect();
+		java.util.List<String> topics = con.fetchTopics();
+		if(topics.size()<=0) {
+			topics.add("No Topics Found.");
+		}
 		for (String topic : topics) {
-			System.out.println(topic);
 			comboTopic.addItem(topic);
 		}
 	}
-
 }

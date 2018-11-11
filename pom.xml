@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ADLS</groupId>
-  <artifactId>lake</artifactId>
+  <groupId>KTOOL</groupId>
+  <artifactId>tool</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>lake</name>
+  <name>Ktool</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -46,6 +46,16 @@
     <artifactId>kafka_2.12</artifactId>
     <version>2.0.0</version>
 </dependency>
+ 
+<dependency>
+        <groupId>com.twitter</groupId>
+        <artifactId>bijection-avro_2.10</artifactId>
+        <version>0.7.0</version>
+</dependency>
+    <dependency>
+    	<groupId>org.apache.avro</groupId>
+    	<artifactId>avro</artifactId>
+    	<version>1.7.1</version>
+    </dependency> 
   </dependencies>
-  
 </project>

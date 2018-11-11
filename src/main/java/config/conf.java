@@ -1,12 +1,11 @@
 package config;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import config.constants.*;
 
 public class conf {
 	// kafka
@@ -14,6 +13,8 @@ public class conf {
 	private String kafkaport;
 	private String zkserver;
 	private String zkport;
+	private String replication_factor;
+	private String partitions;
 
 	// ADLS
 	private String adls_accountName;
@@ -46,7 +47,7 @@ public class conf {
 	private File f;
 	private Properties p;
 	private FileReader reader;
-
+	
 	// files fixed
 	private String KafkaFile = "kafka.properties";
 	private String AdlsFile = "Adls.properties";
@@ -58,52 +59,54 @@ public class conf {
 		f = new File(this.KafkaFile);
 		if (!f.exists()) {
 			p = new Properties();
-			p.setProperty("Server", "");
-			p.setProperty("Port", "");
-			p.setProperty("ZookeeperServer", "");
-			p.setProperty("ZookeeperPort", "");
+			p.setProperty(Kafka.SERVER, "");
+			p.setProperty(Kafka.PORT, "");
+			p.setProperty(Kafka.ZOOKEEPERSERVER, "");
+			p.setProperty(Kafka.ZOOKEEPERPORT, "");
+			p.setProperty(Kafka.REPLICATION_FACTOR, "1");
+			p.setProperty(Kafka.PARTITIONS, "1");
 			p.store(new FileWriter(KafkaFile), "Kafka Properties");
 		}
 		f = new File(this.AdlsFile);
 		if (!f.exists()) {
 			p = new Properties();
-			p.setProperty("AccountName", "");
-			p.setProperty("ClientID", "");
-			p.setProperty("Key", "");
-			p.setProperty("Directory", "");
-			p.setProperty("AuthEndPoint", "");
+			p.setProperty(Adls.ACCOUNT_NAME, "");
+			p.setProperty(Adls.CLIENT_ID, "");
+			p.setProperty(Adls.KEY, "");
+			p.setProperty(Adls.DIRECTORY, "");
+			p.setProperty(Adls.AUTH_END_POINT, "");
 			p.store(new FileWriter(AdlsFile), "Adls Properties");
 		}
 		f = new File(KinesisFile);
 		if (!f.exists()) {
 			p = new Properties();
-			p.setProperty("AccessID", "");
-			p.setProperty("AccessKey", "");
+			p.setProperty(Kinesis.ACCESS_ID, "");
+			p.setProperty(Kinesis.ACCESS_KEY, "");
 			p.store(new FileWriter(KinesisFile), "kinesis Properties");
 
 		}
 		f = new File(EventHubFile);
 		if (!f.exists()) {
 			p = new Properties();
-			p.setProperty("TenentID", "");
-			p.setProperty("Subscription", "");
-			p.setProperty("ClientAppID", "");
-			p.setProperty("ClientKey", "");
-			p.setProperty("NameSpace", "");
-			p.setProperty("ResourceGroup", "");
-			p.setProperty("SharedAPName", "");
-			p.setProperty("SharedAPkey", "");
+			p.setProperty(EventHub.TENENT_ID, "");
+			p.setProperty(EventHub.SUBSCRIPTION, "");
+			p.setProperty(EventHub.CLIENT_APP_ID, "");
+			p.setProperty(EventHub.CLIENTKEY, "");
+			p.setProperty(EventHub.NAME_SPACE, "");
+			p.setProperty(EventHub.RESOURCE_GROUP, "");
+			p.setProperty(EventHub.SHARED_ACCESS_POLICY_NAME, "");
+			p.setProperty(EventHub.SHARED_ACCESS_POLICY_KEY, "");
 			p.store(new FileWriter(EventHubFile), "EventHub Properties");
 
 		}
 		f = new File(JmsFile);
 		if (!f.exists()) {
 			p = new Properties();
-			p.setProperty("URI", "");
-			p.setProperty("UserName", "");
-			p.setProperty("Password", "");
-			p.setProperty("JndiContextFactory", "");
-			p.setProperty("ConnectionFactory", "");
+			p.setProperty(Jms.URI, "");
+			p.setProperty(Jms.USERNAME, "");
+			p.setProperty(Jms.PASSWORD, "");
+			p.setProperty(Jms.JNDI_CONTEXT_FACTORY, "");
+			p.setProperty(Jms.CONNECTION_FACTORY, "");
 			p.store(new FileWriter(JmsFile), "Jms Properties");
 		}
 		loadall();
@@ -111,50 +114,52 @@ public class conf {
 
 	public Properties getKafkaConfig() {
 		p = new Properties();
-		p.setProperty("Server", this.kafkaserver);
-		p.setProperty("Port", this.kafkaport);
-		p.setProperty("ZookeeperServer", this.zkserver);
-		p.setProperty("ZookeeperPort", this.zkport);
+		p.setProperty(Kafka.SERVER, this.kafkaserver);
+		p.setProperty(Kafka.PORT, this.kafkaport);
+		p.setProperty(Kafka.ZOOKEEPERSERVER, this.zkserver);
+		p.setProperty(Kafka.ZOOKEEPERPORT, this.zkport);
+		p.setProperty(Kafka.REPLICATION_FACTOR, this.replication_factor);
+		p.setProperty(Kafka.PARTITIONS, this.partitions);
 		return p;
 	}
 
 	public Properties getAdlsConfig() {
 		p = new Properties();
-		p.setProperty("AccountName", this.adls_accountName);
-		p.setProperty("ClientID", this.adls_clientID);
-		p.setProperty("Key", this.adls_key);
-		p.setProperty("Directory", this.adls_Directory);
-		p.setProperty("AuthEndPoint", this.adls_authEndpoint);
+		p.setProperty(Adls.ACCOUNT_NAME, this.adls_accountName);
+		p.setProperty(Adls.CLIENT_ID, this.adls_clientID);
+		p.setProperty(Adls.KEY, this.adls_key);
+		p.setProperty(Adls.DIRECTORY, this.adls_Directory);
+		p.setProperty(Adls.AUTH_END_POINT, this.adls_authEndpoint);
 		return p;
 	}
 
 	public Properties getKinisisConfig() {
 		p = new Properties();
-		p.setProperty("AccessID", this.ak_accessId);
-		p.setProperty("AccessKey", this.ak_key);
+		p.setProperty(Kinesis.ACCESS_ID, this.ak_accessId);
+		p.setProperty(Kinesis.ACCESS_KEY, this.ak_key);
 		return p;
 	}
 
 	public Properties getEventHubConfig() {
 		p = new Properties();
-		p.setProperty("TenentID", this.eh_tenentId);
-		p.setProperty("Subscription", this.eh_subscriptionId);
-		p.setProperty("ClientAppID", this.eh_ClientAppId);
-		p.setProperty("ClientKey", this.eh_Clientkey);
-		p.setProperty("NameSpace", this.eh_eventhubNameSpace);
-		p.setProperty("ResourceGroup", this.eh_resourceGroup);
-		p.setProperty("SharedAPName", this.eh_sharedAccessPolicyName);
-		p.setProperty("SharedAPkey", this.eh_sharedAccessPolicykey);
+		p.setProperty(EventHub.TENENT_ID, this.eh_tenentId);
+		p.setProperty(EventHub.SUBSCRIPTION, this.eh_subscriptionId);
+		p.setProperty(EventHub.CLIENT_APP_ID, this.eh_ClientAppId);
+		p.setProperty(EventHub.CLIENTKEY, this.eh_Clientkey);
+		p.setProperty(EventHub.NAME_SPACE, this.eh_eventhubNameSpace);
+		p.setProperty(EventHub.RESOURCE_GROUP, this.eh_resourceGroup);
+		p.setProperty(EventHub.SHARED_ACCESS_POLICY_NAME, this.eh_sharedAccessPolicyName);
+		p.setProperty(EventHub.SHARED_ACCESS_POLICY_KEY, this.eh_sharedAccessPolicykey);
 		return p;
 	}
 
 	public Properties getJmsConfig() {
 		p = new Properties();
-		p.setProperty("URI", this.jms_connectionUri);
-		p.setProperty("UserName", this.jms_username);
-		p.setProperty("Password", this.jms_password);
-		p.setProperty("JndiContextFactory", this.jms_jndiContextFactory);
-		p.setProperty("ConnectionFactory", this.jms_connectionFactory);
+		p.setProperty(Jms.URI, this.jms_connectionUri);
+		p.setProperty(Jms.USERNAME, this.jms_username);
+		p.setProperty(Jms.PASSWORD, this.jms_password);
+		p.setProperty(Jms.JNDI_CONTEXT_FACTORY, this.jms_jndiContextFactory);
+		p.setProperty(Jms.CONNECTION_FACTORY, this.jms_connectionFactory);
 		return p;
 	}
 
@@ -163,50 +168,52 @@ public class conf {
 		reader = new FileReader(this.KafkaFile);
 		p = new Properties();
 		p.load(reader);
-		this.kafkaserver = p.getProperty("Server");
-		this.kafkaport = p.getProperty("Port");
-		this.zkserver = p.getProperty("ZookeeperServer");
-		this.zkport = p.getProperty("ZookeeperPort");
+		this.kafkaserver = p.getProperty(Kafka.SERVER);
+		this.kafkaport = p.getProperty(Kafka.PORT);
+		this.zkserver = p.getProperty(Kafka.ZOOKEEPERSERVER);
+		this.zkport = p.getProperty(Kafka.ZOOKEEPERPORT);
+		this.replication_factor = p.getProperty(Kafka.REPLICATION_FACTOR);
+		this.partitions = p.getProperty(Kafka.PARTITIONS);
 
 		// read adls
 		reader = new FileReader(this.AdlsFile);
 		p = new Properties();
 		p.load(reader);
-		this.adls_accountName = p.getProperty("AccountName");
-		this.adls_clientID = p.getProperty("ClientID");
-		this.adls_key = p.getProperty("Key");
-		this.adls_Directory = p.getProperty("Directory");
-		this.adls_authEndpoint = p.getProperty("AuthEndPoint");
+		this.adls_accountName = p.getProperty(Adls.ACCOUNT_NAME);
+		this.adls_clientID = p.getProperty(Adls.CLIENT_ID);
+		this.adls_key = p.getProperty(Adls.KEY);
+		this.adls_Directory = p.getProperty(Adls.DIRECTORY);
+		this.adls_authEndpoint = p.getProperty(Adls.AUTH_END_POINT);
 
 		// read Kinesis
 		reader = new FileReader(this.KinesisFile);
 		p = new Properties();
 		p.load(reader);
-		this.ak_accessId = p.getProperty("AccessID");
-		this.ak_key = p.getProperty("AccessKey");
+		this.ak_accessId = p.getProperty(Kinesis.ACCESS_ID);
+		this.ak_key = p.getProperty(Kinesis.ACCESS_KEY);
 
 		// read EventHub
 		reader = new FileReader(this.EventHubFile);
 		p = new Properties();
 		p.load(reader);
-		this.eh_tenentId = p.getProperty("TenentID");
-		this.eh_subscriptionId = p.getProperty("Subscription");
-		this.eh_ClientAppId = p.getProperty("ClientAppID");
-		this.eh_Clientkey = p.getProperty("ClientKey");
-		this.eh_eventhubNameSpace = p.getProperty("NameSpace");
-		this.eh_resourceGroup = p.getProperty("ResourceGroup");
-		this.eh_sharedAccessPolicyName = p.getProperty("SharedAPName");
-		this.eh_sharedAccessPolicykey = p.getProperty("SharedAPkey");
+		this.eh_tenentId = p.getProperty(EventHub.TENENT_ID);
+		this.eh_subscriptionId = p.getProperty(EventHub.SUBSCRIPTION);
+		this.eh_ClientAppId = p.getProperty(EventHub.CLIENT_APP_ID);
+		this.eh_Clientkey = p.getProperty(EventHub.CLIENTKEY);
+		this.eh_eventhubNameSpace = p.getProperty(EventHub.NAME_SPACE);
+		this.eh_resourceGroup = p.getProperty(EventHub.RESOURCE_GROUP);
+		this.eh_sharedAccessPolicyName = p.getProperty(EventHub.SHARED_ACCESS_POLICY_NAME);
+		this.eh_sharedAccessPolicykey = p.getProperty(EventHub.SHARED_ACCESS_POLICY_KEY);
 
 		// read Jms
 		reader = new FileReader(this.JmsFile);
 		p = new Properties();
 		p.load(reader);
-		this.jms_connectionUri = p.getProperty("URI");
-		this.jms_username = p.getProperty("UserName");
-		this.jms_password = p.getProperty("Password");
-		this.jms_jndiContextFactory = p.getProperty("JndiContextFactory");
-		this.jms_connectionFactory = p.getProperty("ConnectionFactory");
+		this.jms_connectionUri = p.getProperty(Jms.URI);
+		this.jms_username = p.getProperty(Jms.USERNAME);
+		this.jms_password = p.getProperty(Jms.PASSWORD);
+		this.jms_jndiContextFactory = p.getProperty(Jms.JNDI_CONTEXT_FACTORY);
+		this.jms_connectionFactory = p.getProperty(Jms.CONNECTION_FACTORY);
 
 	}
 }

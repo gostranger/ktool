@@ -57,31 +57,37 @@ public class App extends JPanel {
 		btnjms.setBounds(155, 70, 155, 35);
 
 		btnadls.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new adlsGUI(cn);
 			}
 		});
 		btnkafka.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new kafkaGUI(cn);
 			}
 		});
 		btnakfire.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new akfireGUI(cn);
 			}
 		});
 		btnakstream.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new akstreamGUI(cn);
 			}
 		});
 		btneh.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new ehGUI(cn);
 			}
 		});
 		btnjms.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				new jmsGUI(cn);
 			}
@@ -92,7 +98,7 @@ public class App extends JPanel {
 	public static void main(String[] args) throws IOException {
 		// Thread t = Thread.currentThread();
 		JFrame frame = new JFrame("Tools");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.getContentPane().add(new App());
 		frame.pack();
 		frame.setSize(316, 145);

@@ -20,6 +20,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
+
 import config.conf;
 
 public class adlsGUI extends JPanel {
@@ -130,23 +132,27 @@ public class adlsGUI extends JPanel {
 		txtDir.setText(cn.getAdlsConfig().getProperty("Directory"));
 
 		configItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				openFile();
 			}
 		});
 		UploadFile.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				upFile();
 			}
 		});
 
 		btnLoad.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				loader();
 			}
 		});
 
 		btndel.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.showConfirmDialog(adlsGUI.this, "Are you Sure?", "Delete File",
 						JOptionPane.OK_CANCEL_OPTION) == 0) {
@@ -170,6 +176,7 @@ public class adlsGUI extends JPanel {
 		});
 
 		dirList.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mouseClicked(MouseEvent evt) {
 				@SuppressWarnings("unchecked")
 				JList<String> list = (JList<String>) evt.getSource();
@@ -181,7 +188,7 @@ public class adlsGUI extends JPanel {
 		});
 
 		JFrame frame = new JFrame("ADLS Explorer");
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.getContentPane().add(this);
 		frame.setResizable(false);
 		frame.pack();
